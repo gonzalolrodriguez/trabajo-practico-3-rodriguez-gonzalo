@@ -8,6 +8,7 @@
 //   .then((data) => console.log(data.items))
 //   .catch((error) => console.log(error));
 
+
 const btnBuscar = document.getElementById("btn-buscar");
 const contenedorPadre = document.getElementById("contenedor-data");
 const urlDragonBall = "https://dragonball-api.com/api/characters";
