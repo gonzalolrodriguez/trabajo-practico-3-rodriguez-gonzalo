@@ -27,17 +27,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let vistaActualEsBusqueda = false;
 
     async function obtenerDatos(url) {
-        try {
-            const respuesta = await fetch(url);
-            if (!respuesta.ok) {
-                throw new Error(`Error al obtener datos: ${respuesta.status} ${respuesta.statusText}`);
-            }
-            const datos = await respuesta.json();
-            return datos;
-        } catch (error) {
-            console.error('Error en obtenerDatos:', error);
-            throw error;
+        const respuesta = await fetch(url);
+        if (!respuesta.ok) {
+            throw new Error(`Error al obtener datos: ${respuesta.status} ${respuesta.statusText}`);
         }
+        const datos = await respuesta.json();
+        return datos;
     }
 
     function limpiarResultados() {
@@ -60,25 +55,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function crearTarjetaPersonaje(personaje) {
-        const imagenSrc = personaje.image || 'https://via.placeholder.com/150x200?text=No+Imagen';
-        const nombre = personaje.name || 'Nombre desconocido';
-        const raza = personaje.race || 'Desconocida';
-        const genero = personaje.gender || 'Desconocido';
-        
         return `
             <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
-                <div class="card h-100 tarjeta-personaje" data-id="${personaje.id}" style="cursor: pointer;">
-                    <img src="${imagenSrc}" class="card-img-top" alt="${nombre}" 
-                         onerror="this.onerror=null;this.src='https://via.placeholder.com/150x200?text=No+Imagen';">
+                <div class="card h-100 tarjeta-personaje" data-id="${personaje.id}">
+                    <img src="${personaje.image}" class="card-img-top" alt="${personaje.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150x200?text=No+Pudo+Cargar+Imagen';">
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">${nombre}</h5>
-                        <p class="card-text mb-1">Raza: ${raza}</p>
-                        <p class="card-text mb-3">Género: ${genero}</p>
-                        <button class="btn btn-sm btn-outline-light mt-auto boton-ver-detalles" 
-                                data-id="${personaje.id}" 
-                                onclick="event.stopPropagation();">
-                            Ver detalles
-                        </button>
+                        <h5 class="card-title">${personaje.name}</h5>
+                        <p class="card-text mb-1">Raza: ${personaje.race || 'Desconocida'}</p>
+                        <p class="card-text">Género: ${personaje.gender || 'Desconocido'}</p>
+                        <button class="btn btn-sm btn-outline-light mt-auto boton-ver-detalles" data-id="${personaje.id}">Ver detalles</button>
                     </div>
                 </div>
             </div>
@@ -90,50 +75,11 @@ document.addEventListener('DOMContentLoaded', function () {
             mostrarMensaje("No se encontraron personajes.", 'info');
             return;
         }
-        
-        personajes.forEach(personaje => {
+        for (let i = 0; i < personajes.length; i++) {
+            const personaje = personajes[i];
             const tarjetaHTML = crearTarjetaPersonaje(personaje);
             contenedorPersonajes.innerHTML += tarjetaHTML;
-        });
-        
-        // Agregar event listeners a las nuevas cards
-        agregarEventListenersACards();
-    }
-
-    function agregarEventListenersACards() {
-        // Remover listeners anteriores para evitar duplicados
-        const cards = document.querySelectorAll('.tarjeta-personaje');
-        cards.forEach(card => {
-            // Clonar el elemento para remover todos los event listeners
-            const newCard = card.cloneNode(true);
-            card.parentNode.replaceChild(newCard, card);
-        });
-
-        // Agregar nuevos event listeners
-        const newCards = document.querySelectorAll('.tarjeta-personaje');
-        newCards.forEach(card => {
-            card.addEventListener('click', function(evento) {
-                const idPersonaje = this.dataset.id;
-                if (idPersonaje) {
-                    console.log('Card clickeada, ID:', idPersonaje);
-                    mostrarModalDetallesPersonaje(idPersonaje);
-                }
-            });
-        });
-
-        // Event listeners para botones "Ver detalles"
-        const botones = document.querySelectorAll('.boton-ver-detalles');
-        botones.forEach(boton => {
-            boton.addEventListener('click', function(evento) {
-                evento.preventDefault();
-                evento.stopPropagation();
-                const idPersonaje = this.dataset.id;
-                if (idPersonaje) {
-                    console.log('Botón clickeado, ID:', idPersonaje);
-                    mostrarModalDetallesPersonaje(idPersonaje);
-                }
-            });
-        });
+        }
     }
 
     async function cargarPersonajesIniciales(paginaACargar, anexar) {
@@ -155,9 +101,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             const url = `${URL_BASE_API}?page=${paginaActual}&limit=${limitePorPagina}`;
-            console.log('Cargando desde:', url);
             const datos = await obtenerDatos(url);
-            const personajes = datos.items || [];
+            const personajes = datos.items;
 
             if (personajes.length > 0) {
                 agregarPersonajes(personajes);
@@ -197,7 +142,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             const url = `${URL_BASE_API}?name=${encodeURIComponent(nombre)}`;
-            console.log('Buscando en:', url);
             const personajes = await obtenerDatos(url);
 
             if (personajes.length === 0) {
@@ -215,19 +159,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function mostrarModalDetallesPersonaje(idPersonaje) {
-        console.log('Abriendo modal para personaje ID:', idPersonaje);
         alternarIndicadorCarga(true);
-        
         try {
             const url = `${URL_BASE_API}/${idPersonaje}`;
-            console.log('Obteniendo detalles desde:', url);
             const personaje = await obtenerDatos(url);
-            console.log('Datos del personaje:', personaje);
 
-            // Llenar los datos del modal
-            nombreModal.textContent = personaje.name || 'Nombre desconocido';
-            imagenModal.src = personaje.image || 'https://via.placeholder.com/300x400?text=No+Imagen';
-            imagenModal.alt = personaje.name || 'Personaje';
+            nombreModal.textContent = personaje.name;
+            imagenModal.src = personaje.image || 'https://via.placeholder.com/150x200?text=No+Pudo+Cargar+Imagen';
+            imagenModal.alt = personaje.name;
             razaModal.textContent = personaje.race || 'Desconocida';
             generoModal.textContent = personaje.gender || 'Desconocido';
             kiModal.textContent = personaje.ki || 'Desconocido';
@@ -235,26 +174,22 @@ document.addEventListener('DOMContentLoaded', function () {
             afiliacionModal.textContent = personaje.affiliation || 'Desconocida';
             descripcionModal.textContent = personaje.description || 'No hay descripción disponible.';
 
-            // Manejar transformaciones
             listaTransformacionesModal.innerHTML = '';
             if (personaje.transformations && personaje.transformations.length > 0) {
                 contenedorTransformacionesModal.style.display = 'block';
-                personaje.transformations.forEach(transformacion => {
+                for (let i = 0; i < personaje.transformations.length; i++) {
+                    const transformacion = personaje.transformations[i];
                     const li = document.createElement('li');
                     li.textContent = transformacion.name + (transformacion.ki ? ` (Ki: ${transformacion.ki})` : '');
                     listaTransformacionesModal.appendChild(li);
-                });
+                }
             } else {
-                contenedorTransformacionesModal.style.display = 'block';
                 const li = document.createElement('li');
                 li.textContent = 'Ninguna conocida.';
                 listaTransformacionesModal.appendChild(li);
             }
 
-            // Mostrar el modal
             elementoModalPersonaje.show();
-            console.log('Modal mostrado correctamente');
-            
         } catch (error) {
             console.error("Error al obtener detalles del personaje:", error);
             mostrarMensaje(`Error al cargar detalles del personaje: ${error.message}`, 'danger');
@@ -263,19 +198,39 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Event Listeners principales
     botonCargarTodos.addEventListener('click', function () {
-        console.log('Botón cargar todos clickeado');
         cargarPersonajesIniciales(1, false);
     });
 
     formularioBusqueda.addEventListener('submit', function (evento) {
         evento.preventDefault();
-        console.log('Formulario de búsqueda enviado:', entradaBusqueda.value);
         buscarPersonajesPorNombre(entradaBusqueda.value);
     });
 
-    // Scroll infinito
+    contenedorPersonajes.addEventListener('click', function (evento) {
+        let elementoClicado = evento.target;
+        let divTarjetaPersonaje = null;
+
+        while (elementoClicado && elementoClicado !== contenedorPersonajes) {
+            if (elementoClicado.classList.contains('tarjeta-personaje')) {
+                divTarjetaPersonaje = elementoClicado;
+                break;
+            }
+            if (elementoClicado.classList.contains('boton-ver-detalles')) {
+                divTarjetaPersonaje = elementoClicado.closest('.tarjeta-personaje');
+                break;
+            }
+            elementoClicado = elementoClicado.parentElement;
+        }
+
+        if (divTarjetaPersonaje) {
+            const idPersonaje = divTarjetaPersonaje.dataset.id;
+            if (idPersonaje) {
+                mostrarModalDetallesPersonaje(idPersonaje);
+            }
+        }
+    });
+
     window.addEventListener('scroll', function () {
         if (vistaActualEsBusqueda || estaCargando || todosLosPersonajesCargados) {
             return;
@@ -283,12 +238,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if ((window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 300) {
             if (!todosLosPersonajesCargados) {
-                console.log('Cargando más personajes...');
                 cargarPersonajesIniciales(paginaActual + 1, true);
             }
         }
     });
-
-    // Cargar personajes iniciales al cargar la página
-    console.log('Aplicación inicializada');
 });
