@@ -6,8 +6,6 @@ body {
     min-height: 100vh;
 }
 
-
-
 .navbar {
     background-color: rgba(243, 163, 15, 0.9) !important;
     backdrop-filter: blur(10px);
