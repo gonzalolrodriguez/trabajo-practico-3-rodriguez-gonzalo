@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function () {
             alternarIndicadorCarga(false);
         }
     }
-
+    // Event listeners
     botonCargarTodos.addEventListener('click', function () {
         cargarPersonajesIniciales(1, false);
     });
