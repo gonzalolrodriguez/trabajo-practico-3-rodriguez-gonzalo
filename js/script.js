@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let estaCargando = false;
     let todosLosPersonajesCargados = false;
     let vistaActualEsBusqueda = false;
-
+    //funcion para obtener datos
     async function obtenerDatos(url) {
         const respuesta = await fetch(url);
         if (!respuesta.ok) {
@@ -34,18 +34,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const datos = await respuesta.json();
         return datos;
     }
-
+    //funcion para limpiar resultados
     function limpiarResultados() {
         contenedorPersonajes.innerHTML = '';
         areaMensajes.textContent = '';
         areaMensajes.className = 'alert d-none';
     }
-
+    //funcion para mostrar mensajes
     function mostrarMensaje(mensaje, tipo = 'info') {
         areaMensajes.textContent = mensaje;
         areaMensajes.className = `alert alert-${tipo}`;
     }
-
+    //funcion para alternar indicador de carga
     function alternarIndicadorCarga(mostrar) {
         if (mostrar) {
             indicadorCarga.classList.remove('d-none');
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
             indicadorCarga.classList.add('d-none');
         }
     }
-
+    //funcion para crear tarjeta de personaje
     function crearTarjetaPersonaje(personaje) {
         return `
             <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
     }
-
+    //funcion para agregar personajes
     function agregarPersonajes(personajes) {
         if (personajes.length === 0 && paginaActual === 1 && !vistaActualEsBusqueda) {
             mostrarMensaje("No se encontraron personajes.", 'info');
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
             contenedorPersonajes.innerHTML += tarjetaHTML;
         }
     }
-
+    //funcion para cargar personajes iniciales
     async function cargarPersonajesIniciales(paginaACargar, anexar) {
         if (estaCargando || (todosLosPersonajesCargados && anexar)) {
             return;
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
             alternarIndicadorCarga(false);
         }
     }
-
+    //funcion para buscar personajes por nombre
     async function buscarPersonajesPorNombre(nombre) {
         if (nombre.trim() === "") {
             mostrarMensaje("Por favor, ingresa un nombre para buscar.", 'warning');
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
             alternarIndicadorCarga(false);
         }
     }
-
+    //funcion para mostrar modal de detalles del personaje
     async function mostrarModalDetallesPersonaje(idPersonaje) {
         alternarIndicadorCarga(true);
         try {
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
-
+    // Cargar personajes iniciales al cargar la página
     window.addEventListener('scroll', function () {
         if (vistaActualEsBusqueda || estaCargando || todosLosPersonajesCargados) {
             return;
